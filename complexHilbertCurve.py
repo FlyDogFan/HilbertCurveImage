@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 """
-simpleHilbertCurve
-dent earl, dent.earl (a) gmail dot com
+complexHilbertCurve(shuaiqiang.liu(a)gmail dot com) is based on opensource
+simpleHilbertCurve (dent.earl (a) gmail dot com)
 
 **simpleHilbertCurve** is a Python script that uses matplotlib to create
 [Hilbert curve](http://en.wikipedia.org/wiki/Hilbert_curve) plots. Hilbert
@@ -193,6 +193,7 @@ def processFile(filename, options):
     return m
 
 def drawData(ax, data, options):
+    #transfer the price to colour@LSQ
     if options.matshow:
         plt.matshow(data, fignum=False, origin='upper', cmap=plt.get_cmap(options.cmap))
     else:
