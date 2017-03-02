@@ -129,7 +129,7 @@ def initImage(width, height, options):
 def establishAxis(fig, options):
     """ create axis
     """
-    options.axLeft = 0.05
+    options.axLeft = 0.05 #0.05
     options.axWidth = 0.9
     options.axBottom = 0.05
     options.axHeight = 0.9
@@ -194,6 +194,7 @@ def processFile(filename, options):
 
 def drawData(ax, data, options):
     #transfer the price to colour@LSQ
+
     if options.matshow:
         plt.matshow(data, fignum=False, origin='upper', cmap=plt.get_cmap(options.cmap))
     else:
@@ -201,6 +202,7 @@ def drawData(ax, data, options):
         plt.pcolor(data, cmap=plt.get_cmap(options.cmap))
     ax.set_xticks([])
     ax.set_yticks([])
+   
 
 ########################################
 """
@@ -252,6 +254,51 @@ def rot(n, x, y, rx, ry):
             y = n - 1 - y
         return y, x
     return x, y
+
+##---------------d2xy_ab------------------------
+def hcindex2xy_ab(N,hcindex):
+
+    assert(hcindex <= N**2 - 1)
+    positions = ([0,0],[1,0],[1,1],[0,1]) #tuple
+
+    #The last two corresponds to which point of posotions
+    last2bits     = hcindex & 3
+    cor_position  = positions[last2bits]
+    x = cor_position[0]
+    y = cor_position[1]
+
+    subsuqarebits = hcindex>>2 # cooresponding to the subsuqare
+    m = 4 # because the first four points have been given,so start from 4
+    while(m <= N):
+          m2 = m/2
+          case = subsuqarebits & 3 # take the last two bits
+    # in the  quadrant named zero,do flip
+          if case == 0:
+              tmp = x
+              x   = y
+              y   = tmp
+    # in the quadrant named one,do transformation
+          elif case == 1:
+              x   = x + m2 # keep x unchanged
+    # in the quadrant named two,do another transformation
+          elif case == 2:
+              x  = x + m2
+              y  = y + m2
+    # in the quadrant named three, do rotation around y=-x and transformation
+          elif case == 3:
+              temp = y
+              y    = m2 -1-x
+              x    = m2 -1-temp
+              y    = y + m2
+    # default case
+          else:
+              print 'The last2bits:',case,' is not anyone of [0,1,2,3]'
+              sys.exit('last2bits error')
+
+          subsuqarebits = subsuqarebits>>2 # case /=4,remove the last two bits
+          m   *= 2 # iteration,grow 2 times on one direction
+    return x,y
+#################################################
 #
 ########################################
 
@@ -273,6 +320,7 @@ def hilbert(args, options):
         data = processFile(args[0], options)
     else:
         data = generateDemo(options)
+
     fig, pdf = initImage(8, 8, options)
     ax = establishAxis(fig, options)
     ax.set_aspect('equal')
@@ -290,14 +338,24 @@ def generateVectors(level):
     x = numpy.zeros(n**2, dtype=numpy.int16)
     y = numpy.zeros(n**2, dtype=numpy.int16)
     for i in xrange(0, n**2):
-        x[i], y[i] = d2xy(n, i)
-    return x, -y
+#        x[i], y[i] = d2xy(n, i)
+#    return x, -y
+       x[i],y[i] =hcindex2xy_ab(n,i)
+  #  numpy.savetxt('test.out',(x,y), delimiter=',')
+    line, = plt.plot(x, y)
+    plt.xlim(-1,65)
+    plt.ylim(-1,65)
+    plt.show()
+    return x,-y
+
+
 
 def generateDemo(options):
     n = 1 << options.level
     m = numpy.zeros((n, n))
     for i in xrange(0, n**2):
-        x, y = d2xy(n, i)
+        #x, y = d2xy(n, i)
+        x, y =hcindex2xy_ab(n,i)
         m[y][x] = i
     return m
 
@@ -317,6 +375,7 @@ def main():
         genericCurve(options)
     else:
         hilbert(args, options)
+
 
 if __name__ == '__main__':
     main()
